@@ -15,4 +15,14 @@ IEEE-CIS-Fraud-Detection-ML2/
 └── README.md
 ```
 
+### ფაილების აღწერა
+ 
+| ფაილი | აღწერა |
+|-------|--------|
+| `model_experiment_XGBoost.ipynb` | XGBoost — WOE+OHE+Freq encoding, IV selection, GPU |
+| `model_experiment_RandomForest.ipynb` | Random Forest — median imputation, RFE, IQR capping |
+| `model_experiment_AdaBoost.ipynb` | AdaBoost — DecisionTree base, outlier capping კრიტიკული |
+| `model_inference.ipynb` | Registry-დან საუკეთესო მოდელის pipeline, submission |
+ 
+---
  
