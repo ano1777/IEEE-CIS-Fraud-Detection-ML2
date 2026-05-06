@@ -21,7 +21,7 @@ IEEE-CIS-Fraud-Detection-ML2/
 |-------|--------|
 | `model_experiment_XGBoost.ipynb` | XGBoost — WOE+OHE+Freq encoding, IV selection, training|
 | `model_experiment_RandomForest.ipynb` | Random Forest — median imputation, RFE, Gini importance, training|
-| `model_experiment_AdaBoost.ipynb` | AdaBoost — DecisionTree base, outlier capping, training |
+| `model_experiment_AdaBoost.ipynb` | AdaBoost — DecisionTree base, outlier clipping, training |
 | `model_inference.ipynb` | Registry-დან საუკეთესო მოდელის pipeline-ს ჩამოტვირთვა, submission ფაილი|
  
 ---
@@ -123,7 +123,7 @@ xgboost-ში ერთმანეთს შევადარე IV და xg
 ### AdaBoost
  
 **მახასიათებლები:**
-- Outlier capping — weight explosion prevention
+- Outlier clipping — weight explosion prevention
 - Imputation  — DecisionTree NaN-ს ვერ ამუშავებს
 - WOE encoding — fraud signal-ი base learner-ს უადვილებს
 - `algorithm='SAMME'`
@@ -176,14 +176,10 @@ https://dagshub.com/akave23/IEEE-CIS-Fraud-Detection-ML2/experiments
 | `features_final` | Feature selection შემდეგ |
  
 
-## საუკეთესო მოდელის შედეგები (XGBoost)
+## საუკეთესო მოდელის შედეგები ტესტზე/პროგნოზი (XGBoost)
 
-| მეტრიკა | მნიშვნელობა |
-|---------|------------|
-| auc_val | ~0.971 |
-| Val PR-AUC | ~0.865 |
-| Train AUC | ~0.9997 |
-| Overfitting Gap | ~0.0371 |
+| auc_val | ~0.9647 |
+| Val PR-AUC | ~8178|
 
  
 <img width="1367" height="107" alt="image" src="https://github.com/user-attachments/assets/fb7e4635-403f-4358-936c-3973e1903311" />
