@@ -178,8 +178,8 @@ https://dagshub.com/akave23/IEEE-CIS-Fraud-Detection-ML2/experiments
 
 ## საუკეთესო მოდელის შედეგები ტესტზე/პროგნოზი (XGBoost)
 
-| auc_val | ~0.9647 |
-| Val PR-AUC | ~8178|
+auc_val ~0.9647 
+Val PR-AUC ~8178
 
  
 <img width="1367" height="107" alt="image" src="https://github.com/user-attachments/assets/fb7e4635-403f-4358-936c-3973e1903311" />
