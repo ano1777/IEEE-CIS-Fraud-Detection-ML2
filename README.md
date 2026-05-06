@@ -28,32 +28,34 @@ IEEE-CIS-Fraud-Detection-ML2/
 
 ### Feature Engineering
 მონაცემების წინასწარ მოსამზადებლად პირველ რიგში წავშალე ისეთი სვეტები, რომელსაც 90%ზე მეტი NaN მნიშვნელობა ჰქონდა. ასევე დავამატე ახალი სვეტები, რომლების მიანიშვნებდა, რომ ესათუ ის სვეტი შეიცავდა NaN-ებს(missing cols - _was_nan).  შემდეგ გამოვყავი სვეტები კარდინალობების მიხედვით. high cardinality სვეტებზე (რომელიც 50ზე მეტი განსხვავებული მნიშვნელობას იღებდა), გამოვიყენე frequency encoding, ხოლო low cardinality სვეტებზე label encoding. ცარიელი ადგილები (NaN) შევავსე მედიანური მნიშვნელობით, რათა mean მნიშვნელობის შემთხვევაში outlier-ებს არ გამოეწვია შეცდომა. გამოვიყენე მხოლოდ x_train-ის მონაცემები და ამით შევავსე ვალიდაციის ხვეტებიც. (ანუ .fit.transform() x_train-ზე, .transform() x_valid-ზე). 
+<Figure size 2320x500 with 1 Axes>
+ 
 ასევე გამოვიყენე outlier clipping მეთოდი, რომლითაც extreme value-ები, რომლებიც საშუალო მონაცემების საზღვრებს სცდებოდა შევცვალე მინიმალური და მაქსიმალური მნიშვნელობეთ. ძალიან მსგავსი feature-ების დუპლიკაციისგან თავის ასარიდებლად გამოვიყენე კორელაციის ფილტრი 0.95 threshold-თ. აგრეთვე ვარიაციის ფილტრი მცირე ვარიაციის მქონე სვეტების წასაშლელად (Threshold = 0.01).
 მიუხედავად იმისა, რომ xgboost-ს გააჩნია NaN მნიშვნელობებთან გამკლავების უნარი, თავიდანვე ყოველი მოდელისთის გავაკეთე ერთი და იგივე cleaning მეთოდები.
 
 ბოლოს, დავამატე რამდენიმე ისეთი feature, რომლებიც უფრო მეტად გაუმარტივებს მოდელს საქმეს. მაგ:'hour_of_day', 'is_weekend', 'is_night', 'amt_is_round', ვინაიდან fraud ტრანზაქციები ხდება შაბათ-კვირის პერიოდში, უფრო მეტად ღამით, და მრგვალი/მთელი რიცხვი შეიძლება უფრო მეტად იყოს დაკავშირებული მასთან.
 
+xgboost-ის შემთხვევაში გამოვიყენე OHE(cardinality<=6), frequency encoding(card > 100), დანარჩენი სვეტები WOE-ს დახმარებით გადავაქციე კატეგორიულიდან რიცხვითში.
+
 ### Feature Selection
+
 randomForest -ის შემთხვევაში feature selection-ს მეთოდად ვცადე ორივე ცალცალკე: gini importance და RFE. შევადარე მათი შედეგები და საბოლოოდ ავირჩიე RFE, რადგან მისი საშუალებით საბოლოოდ დარჩა 120 feature და validation AUC უფრო მეტი ჰქონდა ამ ეტაპისთვის.
 <Figure size 1200x400 with 2 Axes>
-
-
-### Training
-ტესტირებული მოდელები:
-
+xgboost-ში ერთმანეთს შევადარე IV და xgboost gain და selectFromModel საუკეთესო აღმოჩნდა gain. ამიტომ შემდეგ ტრენინგისას გამოვიყენე მხოლოდ ეს მიდგომა.
+ 
+<Figure size 1200x400 with 2 Axes>
+ 
 ## Training
+ტესტირებული მოდელები:
  
 ### XGBoost (საუკეთესო)
  
 **მახასიათებლები:**
-- Native NaN handling (no imputation)
-- GPU acceleration (`device='cuda'`, `tree_method='hist'`)
-- `eval_metric='aucpr'` — PR-AUC fraud imbalance-ისთვის უფრო informative
-- `scale_pos_weight = (neg_samples / pos_samples)` — class imbalance
-- Early stopping (`early_stopping_rounds=100`)
-- 
-**Grid Search:**
- 
+- `eval_metric='aucpr'
+- `scale_pos_weight = (neg_samples / pos_samples)` — დაუბალანსებელი დატასთვის
+- Early stopping (`100`)
+  
+
 | კონფიგურაცია | CV PR-AUC | Val AUC | Gap | სტატუსი |
 |---------|-----------|---------|-----|---------|
 | depth=4, n=100, lr=0.1 | 0.46 | 0.89 | 0.02 | OK |
@@ -65,7 +67,7 @@ randomForest -ის შემთხვევაში feature selection-ს მ
 | **depth=12, n=1500, lr=0.05** | **0.837** | **0.96** | **0.04** | **Best** |
 
  
-**საბოლოო Hyperparameters:**
+**საბოლოო ჰიპერპარამეტრები:**
  
 | პარამეტრი | მნიშვნელობა |
 |-----------|------------|
@@ -83,7 +85,7 @@ randomForest -ის შემთხვევაში feature selection-ს მ
 | `random_state` | 42 |
  
 **Overfitting ანალიზი:**
-- `depth=10, lr=0.1, n=1500` — gap=0.04, borderline overfit: high lr + deep trees → fast overfitting
+- `depth=10, lr=0.1, n=1500` — gap=0.04, მაღალი lr და ღრმა ხეები იწვევს overfitting-ს
 - `depth=12, min_child_weight=10` — regularization balances depth: min_child_weight=10 prevents leaf splits with few samples → acceptable gap
 
 ### Random Forest
@@ -92,7 +94,7 @@ randomForest -ის შემთხვევაში feature selection-ს მ
 - Median imputation 
 - `class_weight='balanced'` fraud imbalance-ისთვის
 
- 
+
 | კონფიგურაცია | Val AUC | Val PR-AUC | Gap | სტატუსი |
 |---------|---------|-----------|-----|---------|
 | depth=6, min_leaf=30, n=200 | 0.87 | 0.52 | 0.06 | OK |
@@ -124,8 +126,8 @@ randomForest -ის შემთხვევაში feature selection-ს მ
 - Outlier capping — weight explosion prevention
 - Imputation  — DecisionTree NaN-ს ვერ ამუშავებს
 - WOE encoding — fraud signal-ი base learner-ს უადვილებს
-- `algorithm='SAMME'` — SAMME.R deprecated sklearn-ში
-**Grid Search:**
+- `algorithm='SAMME'`
+
  
 | კონფიგურაცია | CV AUC | Val AUC | Gap | სტატუსი |
 |---------|--------|---------|-----|---------|
@@ -145,8 +147,6 @@ randomForest -ის შემთხვევაში feature selection-ს მ
  
 ყველა კონფიგურაციაზე გამოვიყენე 5-Fold Stratified Cross Validation. xgboost-ში გამოვიყენე early stopping.
  
----
- 
 ## საბოლოო მოდელის შერჩევა
  
 | მოდელი | Val ROC-AUC | Val PR-AUC |
@@ -160,11 +160,9 @@ randomForest -ის შემთხვევაში feature selection-ს მ
 - `eval_metric='aucpr'` — imbalanced data-ზე უფრო ინფორმატიული მეტრიკაა და xgboost-ის შემთხვევაში სხვებთან შედარებით საკმაოდ მაღალია.
 - ყველაზე სწრაფი მოდელიც იყო xgboost.
 
-
-MLflow Tracking
 MLflow ექსპერიმენტების ბმული:
 https://dagshub.com/akave23/IEEE-CIS-Fraud-Detection-ML2/experiments
-ჩაწერილი მეტრიკების აღწერა
+
 ### ჩაწერილი მეტრიკები
  
 | მეტრიკა | აღწერა |
@@ -178,7 +176,6 @@ https://dagshub.com/akave23/IEEE-CIS-Fraud-Detection-ML2/experiments
 | `features_final` | Feature selection შემდეგ |
  
 
-საუკეთესო მოდელის შედეგები
 ## საუკეთესო მოდელის შედეგები (XGBoost)
 
 | მეტრიკა | მნიშვნელობა |
